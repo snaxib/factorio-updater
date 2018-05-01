@@ -41,6 +41,8 @@ parser.add_argument('-x', '--experimental', action='store_true', dest='experimen
 parser.add_argument('-I', '--ignore-existing', action='store_true', dest='ignore_existing_files',
                     help="Ignore files that have already been downloaded, and re-download them. "
                     "Use in case of a broken download that was wrongly retained.")
+parser.add_argument('-F', '--flexible', action='store_true', dest='flexible', help='This mode will read the current version from a file,'
+                    ' then if that version is the newest, will return 0. This is used to check the version without stopping the server.')
 
 
 class DownloadFailed(Exception): pass
@@ -203,10 +205,25 @@ def apply_update(args, update):
         print('Update applied, deleting temporary file %s.' % fpath)
         os.unlink(fpath)
 
+def getVersionFromFile(filename):
+    try:
+        version = json.loads(open(filename))
+        return version['version']
+    except:
+        print("Filename incorrect, cannot find or open the file")
+
+def writeVersionToFile(filename, version):
+    try:
+        versionFile = open(filename, 'w')
+        versionFile.write(version)
+    except:
+        print("Filename incorrect, cannot find or open the file")
+
 
 def main():
     args = parser.parse_args()
     glob['verbose'] = args.verbose
+    version_filename = 'version.json'
 
     j = get_updater_data(args.user, args.token)
     if args.list_packages:
@@ -215,21 +232,31 @@ def main():
             print("\t", package)
         return 0
 
-    for_version = find_version(args)
-    if not for_version:
-        print("Unable to determine source version. Please provide either a "
-            "starting version (with --for-version) or a Factorio binary (with "
-            "--apply-to).")
-        return 1
+    if args.flexible:
+        currentVersion = getVersionFromFile(version_filename)
+        updates, latest = pick_updates(j, args.package, currentVersion, args.experimental)
+        if not updates:
+            return 2
+        if updates:
+            writeVersionToFile(filename, updates['to'])
+        return 3
 
-    updates, latest = pick_updates(j, args.package, for_version, args.experimental)
+    if not args.flexible:
+        for_version = find_version(args)
+        if not for_version:
+            print("Unable to determine source version. Please provide either a "
+                "starting version (with --for-version) or a Factorio binary (with "
+                "--apply-to).")
+            return 1
 
-    if not updates:
-        announce_no_updates(args, for_version, latest)
-        return 2
+        updates, latest = pick_updates(j, args.package, for_version, args.experimental)
 
-    for u in updates:
-        apply_update(args, u)
+        if not updates:
+            announce_no_updates(args, for_version, latest)
+            return 2
+
+        for u in updates:
+            apply_update(args, u)
 
     # No updates remain; if an update failed, we will have exceptioned
     # out before getting here.
