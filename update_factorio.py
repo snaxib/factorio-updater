@@ -4,6 +4,7 @@ from __future__ import print_function
 import os, posixpath, requests, re, sys
 import argparse
 import subprocess
+import json
 try:
     import urllib.parse as url_parse
 except ImportError:
