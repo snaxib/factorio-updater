@@ -210,14 +210,14 @@ def getVersionFromFile(filename):
         version = json.loads(open(filename))
         return version['version']
     except:
-        print("Filename incorrect, cannot find or open the file")
+        print("Filename incorrect, cannot find or open the file", sys.exc_info())
 
 def writeVersionToFile(filename, version):
     try:
         versionFile = open(filename, 'w')
         versionFile.write(version)
     except:
-        print("Filename incorrect, cannot find or open the file")
+        print("Filename incorrect, cannot find or open the file", sys.exc_info())
 
 
 def main():
