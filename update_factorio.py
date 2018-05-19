@@ -223,7 +223,7 @@ def writeVersionToFile(filename, version):
 def main():
     args = parser.parse_args()
     glob['verbose'] = args.verbose
-    version_filename = 'version.json'
+    version_filename = 'currentVer.json'
 
     j = get_updater_data(args.user, args.token)
     if args.list_packages:
