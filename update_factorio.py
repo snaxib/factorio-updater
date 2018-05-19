@@ -208,7 +208,9 @@ def apply_update(args, update):
 
 def getVersionFromFile(filename):
     try:
-        version = json.loads(open(filename))
+        rawText = open(filename)
+        text = rawText.read()
+        version = json.loads(text)
         return version['version']
     except:
         print("Filename incorrect, cannot find or open the file", sys.exc_info())
