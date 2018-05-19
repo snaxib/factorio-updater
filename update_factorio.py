@@ -241,7 +241,7 @@ def main():
         if not updates:
             return 2
         if updates:
-            writeVersionToFile(filename, updates['to'])
+            writeVersionToFile(version_filename, updates['to'])
         return 3
 
     if not args.flexible:
